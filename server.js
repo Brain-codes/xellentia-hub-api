@@ -5,11 +5,15 @@ const nodemailer = require("nodemailer");
 const validator = require("validator");
 const fs = require("fs");
 const path = require("path");
+const cors = require("cors");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+
+// Use CORS middleware
+app.use(cors());
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -36,7 +40,6 @@ app.post("/contact", (req, res) => {
     return res.status(400).json({ error: "Invalid phone number" });
   }
 
-  // Read the HTML file
   const templatePath = path.join(__dirname, "contactEmail.html");
   fs.readFile(templatePath, "utf8", (err, html) => {
     if (err) {
@@ -44,7 +47,6 @@ app.post("/contact", (req, res) => {
       return res.status(500).json({ error: "Failed to load email template" });
     }
 
-    // Replace placeholders with actual values
     const filledHtml = html
       .replace("{{name}}", name)
       .replace("{{nameBlock}}", name)
@@ -52,7 +54,6 @@ app.post("/contact", (req, res) => {
       .replace("{{phone}}", phone)
       .replace("{{message}}", message);
 
-    // Email options
     const mailOptions = {
       from: email,
       to: "adenugaadewumi01@gmail.com",
@@ -65,7 +66,6 @@ app.post("/contact", (req, res) => {
       },
     };
 
-    // Send email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
